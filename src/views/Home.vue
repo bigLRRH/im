@@ -16,7 +16,13 @@ const chatInputHeightPercent = ref(0)
 
 function updateSidebarWidthPercentFromPx() {
     const width = window.innerWidth
-    sidebarWidthPercent.value = (layout.sidebarWidthPx / width) * 100
+    // 约束宽度在允许范围内
+    const clampedWidth = Math.max(
+        sidebarMinWidthPx,
+        Math.min(layout.sidebarWidthPx, sidebarMaxWidthPx)
+    )
+    layout.setSidebarWidthPx(clampedWidth)
+    sidebarWidthPercent.value = (clampedWidth / width) * 100
 }
 
 function updateChatInputHeightPercentFromPx() {
@@ -26,6 +32,12 @@ function updateChatInputHeightPercentFromPx() {
 
 function updateLayoutPercentages() {
     const width = window.innerWidth
+
+    // 计算百分比前先约束存储值
+    layout.sidebarWidthPx = Math.max(
+        sidebarMinWidthPx,
+        Math.min(layout.sidebarWidthPx, sidebarMaxWidthPx)
+    )
 
     sidebarMinWidthPercent.value = (sidebarMinWidthPx / width) * 100
     sidebarMaxWidthPercent.value = (sidebarMaxWidthPx / width) * 100
@@ -67,7 +79,7 @@ onBeforeUnmount(() => {
 
         <!-- 拖拽布局 -->
         <splitpanes class="split-wrapper" @resized="storeSidebarWidth">
-            <pane class="sidebar-pane">
+            <pane class="sidebar-pane" :min-size="sidebarMinWidthPercent" :max-size="sidebarMaxWidthPercent">
                 <el-container class="sidebar">
                     <el-header class="sidebar-search">搜索</el-header>
                     <el-main class="thread-list">聊天列表</el-main>
