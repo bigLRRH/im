@@ -1,49 +1,44 @@
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useLayoutStore } from '@/stores/layout'
 
-const layout = useLayoutStore()
-
+// 常量配置
 const sidebarMinWidthPx = 160
 const sidebarMaxWidthPx = 320
 
-const sidebarMinWidthPercent = ref(0)
-const sidebarMaxWidthPercent = ref(0)
+// 状态管理
+const layout = useLayoutStore()
+
+// 响应式状态
 const sidebarWidthPercent = ref(0)
 const chatInputHeightPercent = ref(0)
 
-function updateSidebarWidthPercentFromPx() {
+// 计算属性
+const sidebarMinWidthPercent = computed(() => (sidebarMinWidthPx / window.innerWidth) * 100)
+const sidebarMaxWidthPercent = computed(() => (sidebarMaxWidthPx / window.innerWidth) * 100)
+
+// 工具函数
+function clamp(value: number, min: number, max: number) {
+    return Math.max(min, Math.min(value, max))
+}
+
+function updateSidebarWidthPercent() {
     const width = window.innerWidth
-    // 约束宽度在允许范围内
-    const clampedWidth = Math.max(
-        sidebarMinWidthPx,
-        Math.min(layout.sidebarWidthPx, sidebarMaxWidthPx)
-    )
+    const clampedWidth = clamp(layout.sidebarWidthPx, sidebarMinWidthPx, sidebarMaxWidthPx)
     layout.setSidebarWidthPx(clampedWidth)
     sidebarWidthPercent.value = (clampedWidth / width) * 100
 }
 
-function updateChatInputHeightPercentFromPx() {
+function updateChatInputHeightPercent() {
     const height = window.innerHeight
     chatInputHeightPercent.value = (layout.chatInputHeightPx / height) * 100
 }
 
 function updateLayoutPercentages() {
-    const width = window.innerWidth
-
-    // 计算百分比前先约束存储值
-    layout.sidebarWidthPx = Math.max(
-        sidebarMinWidthPx,
-        Math.min(layout.sidebarWidthPx, sidebarMaxWidthPx)
-    )
-
-    sidebarMinWidthPercent.value = (sidebarMinWidthPx / width) * 100
-    sidebarMaxWidthPercent.value = (sidebarMaxWidthPx / width) * 100
-
-    updateSidebarWidthPercentFromPx()
-    updateChatInputHeightPercentFromPx()
+    updateSidebarWidthPercent()
+    updateChatInputHeightPercent()
 }
 
 function storeSidebarWidth({ prevPane }: any) {
@@ -60,17 +55,19 @@ function storeChatPaneHeight({ prevPane }: any) {
     chatInputHeightPercent.value = prevPane.size
 }
 
-onMounted(() => {
-    console.log('onMounted')
-    updateLayoutPercentages()
-    window.addEventListener('resize', updateLayoutPercentages)
-})
+// 自定义 Hook：监听窗口大小变化
+function useResizeListener(callback: () => void) {
+    onMounted(() => {
+        callback()
+        window.addEventListener('resize', callback)
+    })
+    onBeforeUnmount(() => {
+        window.removeEventListener('resize', callback)
+    })
+}
 
-onBeforeUnmount(() => {
-    console.log('onBeforeUnmount')
-    window.removeEventListener('resize', updateLayoutPercentages)
-})
-
+// 初始化
+useResizeListener(updateLayoutPercentages)
 </script>
 
 <template>
@@ -103,6 +100,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* 样式保持不变 */
 .app-container {
     width: 100%;
     height: 100%;
@@ -184,7 +182,6 @@ onBeforeUnmount(() => {
     overflow-y: auto;
 }
 
-
 .chatroom-input-area {
     min-height: 148px;
     max-height: 311px;
@@ -194,6 +191,7 @@ onBeforeUnmount(() => {
     border-top: 1px solid #262626;
 }
 </style>
+
 
 <style>
 /* 拓宽 splitter 拖拽交互区域 */
