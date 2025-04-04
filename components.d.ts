@@ -9,7 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppLayout: typeof import('./src/components/AppLayout.vue')['default']
-    Chatroom: typeof import('./src/components/Chatroom.vue')['default']
+    Chatroom: typeof import('./src/components/layout/Chatroom.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElChatHeader: typeof import('element-plus/es')['ElChatHeader']
@@ -18,8 +18,12 @@ declare module 'vue' {
     ElHeader: typeof import('element-plus/es')['ElHeader']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElMain: typeof import('element-plus/es')['ElMain']
+    Navbar: typeof import('./src/components/layout/Navbar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    Sidebar: typeof import('./src/components/Sidebar.vue')['default']
+    Sidebar: typeof import('./src/components/layout/Sidebar.vue')['default']
+    SidebarSearch: typeof import('./src/components/layout/SidebarSearch.vue')['default']
+    SplitWrapper: typeof import('./src/components/layout/SplitWrapper.vue')['default']
+    ThreadList: typeof import('./src/components/layout/ThreadList.vue')['default']
   }
 }

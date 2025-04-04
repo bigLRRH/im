@@ -1,0 +1,35 @@
+// styles/splitpanes.scss
+.splitpanes {
+    &__splitter {
+        position: relative;
+        z-index: 0;
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
+        &:hover::before {
+            opacity: 1;
+        }
+    }
+
+    &--horizontal>&__splitter::before {
+        top: -3px;
+        bottom: -3px;
+        width: 100%;
+        cursor: row-resize;
+    }
+
+    &--vertical>&__splitter::before {
+        left: -3px;
+        right: -3px;
+        height: 100%;
+        cursor: col-resize;
+    }
+}

@@ -99,137 +99,131 @@ useResizeListener(updateLayoutPercentages)
     </el-container>
 </template>
 
-<style scoped>
-/* 样式保持不变 */
+<style lang="scss" scoped>
 .app-container {
     width: 100%;
     height: 100%;
     display: flex;
-}
 
-.navbar {
-    width: 60px;
-    background-color: #202020;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    writing-mode: vertical-rl;
-}
+    .navbar {
+        width: 60px;
+        background-color: #202020;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        writing-mode: vertical-rl;
+    }
 
-.split-wrapper {
-    flex: 1;
-    height: 100%;
-    background-color: #121212;
-}
+    .split-wrapper {
+        flex: 1;
+        height: 100%;
+        background-color: #121212;
 
-.sidebar-pane {
-    min-width: 160px;
-    max-width: 320px;
-    background-color: #121212;
-    border-right: 1px solid #232323;
-}
+        .sidebar-pane {
+            min-width: 160px;
+            max-width: 320px;
+            background-color: #121212;
+            border-right: 1px solid #232323;
 
-.sidebar {
-    background-color: #1b1b1b;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-}
+            .sidebar {
+                background-color: #1b1b1b;
+                color: #fff;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                overflow: hidden;
 
-.sidebar-search {
-    height: 64px;
-    background-color: #1b1b1b;
-    border-bottom: 1px solid #232323;
-    display: flex;
-    align-items: center;
-    padding-left: 16px;
-}
+                .sidebar-search {
+                    height: 64px;
+                    background-color: #1b1b1b;
+                    border-bottom: 1px solid #232323;
+                    display: flex;
+                    align-items: center;
+                    padding-left: 16px;
+                }
 
-.thread-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px;
-}
+                .thread-list {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 8px;
+                }
+            }
+        }
 
-.chatroom-layout {
-    height: 100%;
-    background-color: #111;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-}
+        .chatroom-layout {
+            height: 100%;
+            background-color: #111;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
 
-.chatroom-header {
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom: 1px solid #262626;
-}
+            .chatroom-header {
+                height: 64px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-bottom: 1px solid #262626;
+            }
 
-.chatroom-body {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
+            .chatroom-body {
+                flex: 1;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
 
-.message-list {
-    flex: 1;
-    overflow-y: auto;
-}
+                .message-list {
+                    flex: 1;
+                    overflow-y: auto;
+                }
 
-.chatroom-input-area {
-    min-height: 148px;
-    max-height: 311px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-top: 1px solid #262626;
+                .chatroom-input-area {
+                    min-height: 148px;
+                    max-height: 311px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-top: 1px solid #262626;
+                }
+            }
+        }
+    }
 }
 </style>
 
+<style lang="scss">
+.splitpanes {
+    &__splitter {
+        position: relative;
+        z-index: 0;
 
-<style>
-/* 拓宽 splitter 拖拽交互区域 */
-.splitpanes__splitter {
-    position: relative;
-    z-index: 0;
-}
+        &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: auto;
+        }
 
-/* 可视部分仍是细线，交互区域扩大 */
-.splitpanes__splitter::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    /* 可视反馈 */
-    opacity: 0;
-    z-index: 1;
-    pointer-events: auto;
-}
+        &:hover::before {
+            opacity: 1;
+        }
+    }
 
-/* 鼠标悬停时显示热区辅助色 */
-.splitpanes__splitter:hover::before {
-    opacity: 1;
-}
+    &--horizontal>&__splitter::before {
+        top: -3px;
+        bottom: -3px;
+        width: 100%;
+        cursor: row-resize;
+    }
 
-/* 横向拖动区域扩展（上下拖） */
-.splitpanes--horizontal>.splitpanes__splitter::before {
-    top: -3px;
-    bottom: -3px;
-    width: 100%;
-    cursor: row-resize;
-}
-
-/* 纵向拖动区域扩展（左右拖） */
-.splitpanes--vertical>.splitpanes__splitter::before {
-    left: -3px;
-    right: -3px;
-    height: 100%;
-    cursor: col-resize;
+    &--vertical>&__splitter::before {
+        left: -3px;
+        right: -3px;
+        height: 100%;
+        cursor: col-resize;
+    }
 }
 </style>
