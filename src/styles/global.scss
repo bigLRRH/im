@@ -1,0 +1,20 @@
+// 全局基础样式
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0; // 确保没有默认的内边距
+  box-sizing: border-box; // 统一盒模型
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit; // 继承盒模型设置
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+}
