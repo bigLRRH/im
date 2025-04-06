@@ -19,6 +19,7 @@ import Navbar from '@/components/navbar/index.vue'
     flex-direction: row;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 
     .navbar {
         width: 60px;
@@ -29,6 +30,7 @@ import Navbar from '@/components/navbar/index.vue'
         justify-content: center;
         writing-mode: vertical-rl;
         text-align: center;
+        overflow: hidden;
     }
 
     .app-main {

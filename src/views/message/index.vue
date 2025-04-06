@@ -46,7 +46,7 @@ useResizeListener(updateSidebarWidthPercent)
             <Sidebar />
         </pane>
 
-        <pane class="chatroom-layout" :size="100 - sidebarWidthPercent" :min-size="100 - sidebarMaxWidthPercent"
+        <pane class="chatroom" :size="100 - sidebarWidthPercent" :min-size="100 - sidebarMaxWidthPercent"
             :max-size="100 - sidebarMinWidthPercent">
             <Chatroom />
         </pane>
@@ -56,6 +56,7 @@ useResizeListener(updateSidebarWidthPercent)
 <style scoped lang="scss">
 .split-wrapper {
     flex: 1;
+    height: 100%;
     background-color: #121212;
 
     .sidebar-pane {
@@ -66,6 +67,17 @@ useResizeListener(updateSidebarWidthPercent)
         height: 100%;
         display: flex;
         flex-direction: column; // Ensure proper layout for child elements
+        overflow: hidden; // Prevent content overflow
+    }
+
+    .chatroom {
+        flex: 1;
+        height: 100%;
+        width: 100%;
+        background-color: #111;
+        color: #e8e8e8;
+        display: flex;
+        flex-direction: column;
         overflow: hidden; // Prevent content overflow
     }
 }
