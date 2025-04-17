@@ -15,12 +15,27 @@ name = "im_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.2.0", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["tray-icon"] }
+tauri = { version = "2.5.0", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = "0.34.0"
-webrtc = "0.12.0"
+tokio = { version = "1.44.2", features = ["full"] }
+libp2p = { version = "0.55.0", features = [
+    "tcp",       # TCP 支持
+    "dns",       # 域名解析
+    "websocket", # WebSocket 传输（可选）
+    "identify",  # Peer 特征交换
+    "gossipsub", # PubSub 广播协议
+    "mdns",      # 局域网节点发现
+    "noise",     # 加密
+    "yamux",     # 多路复用
+    "tokio",     # tokio executor 支持
+    "macros",    # #[derive(NetworkBehaviour)]
+    "quic",
+] }
+futures = "0.3.31"
+anyhow = "1.0.98"
