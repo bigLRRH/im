@@ -22,7 +22,6 @@ tauri = { version = "2.5.0", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-rusqlite = "0.34.0"
 tokio = { version = "1.44.2", features = ["full"] }
 libp2p = { version = "0.55.0", features = [
     "tcp",       # TCP 支持
@@ -39,3 +38,4 @@ libp2p = { version = "0.55.0", features = [
 ] }
 futures = "0.3.31"
 anyhow = "1.0.98"
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
