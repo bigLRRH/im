@@ -1,11 +1,13 @@
 // src/p2p/mod.rs
+
+pub mod behaviour;
+pub mod messaging;
+pub mod peer;
+
 use anyhow::Result;
-// use behaviour::{build_behaviour, ChatBehaviour};
+use behaviour::ChatBehaviour;
 use futures::StreamExt;
-use libp2p::{
-    gossipsub, identity::Keypair, mdns, noise, swarm::NetworkBehaviour, tcp, yamux, Multiaddr,
-    Swarm, SwarmBuilder,
-};
+use libp2p::{gossipsub, mdns, noise, tcp, yamux, Multiaddr, Swarm, SwarmBuilder};
 use messaging::{P2PCommand, P2PMessage};
 use peer::build_peer;
 use std::{
@@ -17,22 +19,12 @@ use tokio::{
     sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
 };
 
-// pub mod behaviour;
-pub mod messaging;
-pub mod peer;
-
 pub struct P2PNode {
     pub peer_id: libp2p::PeerId,
     pub listen_addr: Multiaddr,
     pub swarm: Swarm<ChatBehaviour>,
     pub command_sender: UnboundedSender<P2PCommand>,
     pub message_receiver: UnboundedReceiver<P2PMessage>,
-}
-// We create a custom network behaviour that combines Gossipsub and Mdns.
-#[derive(NetworkBehaviour)]
-struct ChatBehaviour {
-    gossipsub: gossipsub::Behaviour,
-    mdns: mdns::tokio::Behaviour,
 }
 
 impl P2PNode {

@@ -10,6 +10,7 @@ todo list:
 - [ ] 设置可拖拽部分
 - [ ] 搜索栏不刷新
 - [ ] 工具栏
+- [ ] 敏感词检测
 
 bug list:
 - [ ] Uncaught TypeError: Cannot read properties of null (reading 'max')
