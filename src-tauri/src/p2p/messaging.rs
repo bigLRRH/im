@@ -1,10 +1,13 @@
-// src/p2p/messaging.rs
-#[derive(Debug, Clone)]
-pub enum P2PMessage {
-    ChatMessage { from: String, content: String },
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum P2PCommand {
+    SubscribeTopic(String),
+    PublishMessage { topic: String, message: String },
 }
 
-#[derive(Debug, Clone)]
-pub enum P2PCommand {
-    SendMessage(String),
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum P2PEvent {
+    MessageReceived { topic: String, data: String },
+    PeerDiscovered(String),
 }

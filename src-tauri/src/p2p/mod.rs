@@ -1,40 +1,42 @@
-// src/p2p/mod.rs
+// im/src-tauri/src/p2p/mod.rs
 
 pub mod behaviour;
 pub mod messaging;
 pub mod peer;
 
 use anyhow::Result;
-use behaviour::ChatBehaviour;
+use behaviour::{ChatBehaviour, ChatBehaviourEvent};
 use futures::StreamExt;
-use libp2p::{gossipsub, mdns, noise, tcp, yamux, Multiaddr, Swarm, SwarmBuilder};
-use messaging::{P2PCommand, P2PMessage};
-use peer::build_peer;
+use libp2p::{
+    gossipsub, mdns, noise, swarm::SwarmEvent, tcp, yamux, Multiaddr, Swarm, SwarmBuilder,
+};
+// * 如果 messaging 模块将来继续增长，可以考虑将 P2PCommand 和 P2PEvent 拆分到各自模块中提升可维护性
+use messaging::{P2PCommand, P2PEvent};
 use std::{
-    hash::{DefaultHasher, Hash, Hasher},
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
     time::Duration,
 };
 use tokio::{
-    io,
+    io, select,
     sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
 };
 
 pub struct P2PNode {
-    pub peer_id: libp2p::PeerId,
-    pub listen_addr: Multiaddr,
     pub swarm: Swarm<ChatBehaviour>,
     pub command_sender: UnboundedSender<P2PCommand>,
-    pub message_receiver: UnboundedReceiver<P2PMessage>,
+    command_receiver: UnboundedReceiver<P2PCommand>,
+    pub event_sender: UnboundedSender<P2PEvent>,
 }
 
 impl P2PNode {
-    pub async fn new(listen_addr: Multiaddr) -> Result<Self> {
-        let (peer_id, keypair) = build_peer();
-        // let (behaviour, message_receiver, command_sender) = build_behaviour(&keypair).await?;
-        let (_, message_receiver) = unbounded_channel();
-        let (command_sender, _) = unbounded_channel();
-
-        let mut swarm = SwarmBuilder::with_existing_identity(keypair)
+    pub async fn new(
+        listen_addr: Multiaddr,
+        event_sender: UnboundedSender<P2PEvent>,
+    ) -> Result<Self> {
+        let (command_sender, command_receiver) = unbounded_channel();
+        // * SwarmBuilder 中未提供自定义密钥对配置选项，当前仅适用于临时网络或非身份绑定场景
+        let mut swarm = SwarmBuilder::with_new_identity()
             .with_tokio()
             .with_tcp(
                 tcp::Config::default(),
@@ -72,13 +74,14 @@ impl P2PNode {
                 Ok(ChatBehaviour { gossipsub, mdns })
             })?
             .build();
+
         swarm.listen_on(listen_addr.clone())?;
+
         Ok(Self {
-            peer_id,
-            listen_addr,
             swarm,
             command_sender,
-            message_receiver,
+            command_receiver,
+            event_sender,
         })
     }
 
@@ -86,14 +89,67 @@ impl P2PNode {
         self.command_sender.clone()
     }
 
-    pub fn message_receiver(&mut self) -> &mut UnboundedReceiver<P2PMessage> {
-        &mut self.message_receiver
-    }
-
     pub async fn run(mut self) -> Result<()> {
+        let topic = gossipsub::IdentTopic::new("chat");
+        self.swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
+
         loop {
-            let event = self.swarm.select_next_some().await;
-            println!("[Swarm Event] {:?}", event);
+            // * run 函数可拆分为 handle_command 与 handle_event 两个子函数以提升可读性
+            select! {
+                Some(command)=self.command_receiver.recv()=>{
+                    match command{
+                        P2PCommand::SubscribeTopic(topic) => {
+                            println!("Subscribing to topic: {topic}");
+                            let topic = gossipsub::IdentTopic::new(topic);
+                            // * 每次收到 P2PCommand::SubscribeTopic 都会重新构造 IdentTopic，建议缓存 topic 对象
+                            self.swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
+                        }
+                        P2PCommand::PublishMessage { topic, message } => {
+                            println!("Publishing message: {message} to topic: {topic}");
+                            let topic = gossipsub::IdentTopic::new(topic);
+                            self.swarm.behaviour_mut().gossipsub.publish(topic,message.as_bytes())?;
+                        }
+                    }
+                }
+                event = self.swarm.select_next_some()=>{
+                    match event {
+                        SwarmEvent::Behaviour(ChatBehaviourEvent::Mdns(mdns::Event::Discovered(list))) => {
+                            for (peer_id, _multiaddr) in list {
+                                println!("mDNS discovered a new peer: {peer_id}");
+                                self.swarm.behaviour_mut().gossipsub.add_explicit_peer(&peer_id);
+
+                            }
+                        },
+                        SwarmEvent::Behaviour(ChatBehaviourEvent::Mdns(mdns::Event::Expired(list))) => {
+                            for (peer_id, _multiaddr) in list {
+                                println!("mDNS discover peer has expired: {peer_id}");
+                                self.swarm.behaviour_mut().gossipsub.remove_explicit_peer(&peer_id);
+                            }
+                        },
+                        SwarmEvent::Behaviour(ChatBehaviourEvent::Gossipsub(gossipsub::Event::Message {
+                            propagation_source: _,
+                            message_id: _,
+                            message,
+                        })) => {
+                            if let Ok(data) = String::from_utf8(message.data.clone()) {
+                                println!("Received message: {data}");
+                                // 将消息发送到前端
+                                self.event_sender.send(P2PEvent::MessageReceived {
+                                    topic: message.topic.to_string(),
+                                    data: data,
+                                }).unwrap_or_else(|e| eprintln!("事件发送失败: {}", e));
+                            } else {
+                                println!("Received invalid UTF-8 message");
+                            }
+                        }
+                        SwarmEvent::NewListenAddr { address, .. } => {
+                            println!("Local node is listening on {address}");
+                        }
+                        _ => {}
+                    }
+                }
+
+            }
         }
     }
 }
