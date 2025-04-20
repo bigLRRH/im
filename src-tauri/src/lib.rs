@@ -1,6 +1,6 @@
-use p2p::{messaging::P2PCommand, P2PNode};
+use commands::p2p_commands::send_p2p_event;
+use p2p::P2PNode;
 use tauri::{async_runtime, Emitter, Manager};
-use tokio::sync::mpsc::UnboundedSender;
 
 mod commands;
 mod dao;
@@ -8,11 +8,6 @@ mod p2p;
 mod services;
 mod types;
 mod utils;
-
-#[derive(Clone)]
-pub struct AppState {
-    pub command_sender: UnboundedSender<P2PCommand>,
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -27,7 +22,7 @@ pub fn run() {
             });
 
             let command_sender = p2p_node.command_sender();
-            app.manage(AppState { command_sender });
+            app.manage(command_sender);
 
             // 启动事件转发任务（将 P2P 事件转发到前端）
             let app_handle = app.handle().clone();
@@ -46,9 +41,8 @@ pub fn run() {
 
             Ok(())
         })
-        .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        // .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![send_p2p_event])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
