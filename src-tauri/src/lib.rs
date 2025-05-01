@@ -1,18 +1,15 @@
-use commands::p2p_commands::send_p2p_event;
+use commands::p2p_commands::handle_p2p_event;
 use p2p::P2PNode;
 use tauri::{async_runtime, Emitter, Manager};
 
 mod commands;
-mod dao;
 mod p2p;
-mod services;
-mod types;
-mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
+            // * 可放入service层
             let listen_addr = "/ip4/0.0.0.0/tcp/0".parse().unwrap();
             let (event_sender, mut event_receiver) = tokio::sync::mpsc::unbounded_channel();
             let p2p_node = async_runtime::block_on(async {
@@ -42,7 +39,7 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![send_p2p_event])
+        .invoke_handler(tauri::generate_handler![handle_p2p_event])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

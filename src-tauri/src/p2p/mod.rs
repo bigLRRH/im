@@ -2,7 +2,7 @@
 
 pub mod behaviour;
 pub mod messaging;
-pub mod peer;
+// pub mod peer;
 
 use anyhow::Result;
 use behaviour::{ChatBehaviour, ChatBehaviourEvent};
@@ -98,7 +98,7 @@ impl P2PNode {
             select! {
                 Some(command)=self.command_receiver.recv()=>{
                     match command{
-                        P2PCommand::SubscribeTopic(topic) => {
+                        P2PCommand::SubscribeTopic{topic} => {
                             println!("Subscribing to topic: {topic}");
                             let topic = gossipsub::IdentTopic::new(topic);
                             // * 每次收到 P2PCommand::SubscribeTopic 都会重新构造 IdentTopic，建议缓存 topic 对象

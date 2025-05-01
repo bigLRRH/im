@@ -1,8 +1,30 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { invokeP2PCommand } from '@/api/p2p'
 
-const message_input = ref('');
+const emit = defineEmits<{
+    (e: 'send', message: string): void
+}>()
+
+const message_input = ref('')
+const topic = 'chat'
+
+const sendMessage = async () => {
+    const message = message_input.value.trim()
+    if (!message) return
+
+    await invokeP2PCommand({
+        type: 'publishMessage',
+        topic,
+        message,
+    })
+
+    emit('send', message) // 发给父组件 Chatroom
+    message_input.value = ''
+}
 </script>
+
+
 
 <template>
     <el-container class="input-area">
@@ -13,8 +35,7 @@ const message_input = ref('');
             <textarea class="message-input" v-model="message_input" />
         </el-main>
         <el-footer class="input-area-footer">
-            <!-- todo 选择按enter发送消息还是按ctrl+enter发送消息 -->
-            <el-button type="primary">
+            <el-button type="primary" @click="sendMessage">
                 发送
             </el-button>
         </el-footer>
