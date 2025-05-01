@@ -13,5 +13,6 @@ todo list:
 - [ ] 敏感词检测
 
 bug list:
+- [ ] ！！！发送重复消息会导致崩溃
 - [ ] Uncaught TypeError: Cannot read properties of null (reading 'max')
 - [ ] sidebar拉到最大时像素值不是320px
