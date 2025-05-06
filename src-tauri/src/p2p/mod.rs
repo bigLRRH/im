@@ -126,6 +126,12 @@ impl P2PNode {
                                 self.swarm.behaviour_mut().gossipsub.remove_explicit_peer(&peer_id);
                             }
                         },
+                        SwarmEvent::Behaviour(ChatBehaviourEvent::Gossipsub(gossipsub::Event::Subscribed { peer_id, topic })) => {
+                            println!("Peer {peer_id} subscribed to topic {topic}");
+                        },
+                        SwarmEvent::Behaviour(ChatBehaviourEvent::Gossipsub(gossipsub::Event::Unsubscribed { peer_id, topic })) => {
+                            println!("Peer {peer_id} unsubscribed from topic {topic}");
+                        },
                         SwarmEvent::Behaviour(ChatBehaviourEvent::Gossipsub(gossipsub::Event::Message {
                             propagation_source: _,
                             message_id: _,
@@ -141,11 +147,14 @@ impl P2PNode {
                             } else {
                                 println!("Received invalid UTF-8 message");
                             }
-                        }
+                        },
                         SwarmEvent::NewListenAddr { address, .. } => {
                             println!("Local node is listening on {address}");
+                        },
+                        _=> {
+                            // 处理其他事件
                         }
-                        _ => {}
+
                     }
                 }
 
